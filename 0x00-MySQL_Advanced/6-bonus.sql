@@ -2,12 +2,16 @@
 DELIMITER $$
 CREATE PROCEDURE AddBonus (IN user_id INT, IN project_name VARCHAR(255), IN score INT)
 BEGIN
-    IF (SELECT id FROM projects WHERE name = project_name) IS NULL THEN
+    -- check if project name exists otherwise insert project_name as a new project
+    IF (SELECT COUNT(*) FROM projects WHERE name = project_name) = 0 THEN
         INSERT into projects (name) VALUES(project_name);
     END IF;
-    UPDATE corrections
-    SET score = score
-    WHERE user_id = user_id AND project_id = (
-        SELECT id FROM projects WHERE name = project_name
-    );
+
+    -- insert a new row to the corrections table
+    INSERT into corrections (user_id, project_id, score)
+        VALUES(
+            user_id,
+            (SELECT id FROM projects WHERE name = project_name),
+            score
+            );
 END$$
