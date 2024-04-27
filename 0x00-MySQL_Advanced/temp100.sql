@@ -1,17 +1,14 @@
--- Write a SQL script that creates a stored procedure ComputeAverageWeightedScoreForUser
--- that computes and store the average weighted score for a student.
-
-DELIMITER $$
+-- redo task 100
 
 DELIMITER $$
 CREATE PROCEDURE ComputeAverageWeightedScoreForUser (IN user_id_param INT)
 BEGIN
-    DECLARE WeightedAvg FLOAT;
+    DECLARE WeightedAvg;
     -- divided the product of score and weight by the sum of the weight of each project
-    SELECT SUM(score * weight) / SUM(weight) INTO WeightedAvg
+    SELECT user_id, sum(score * weight) / sum(weight) INTO WeightedAvg
     FROM corrections
     JOIN projects
-    ON corrections.project_id = projects.id
+    ON project_id = id
     WHERE user_id = user_id_param
     GROUP BY user_id_param;
 
@@ -19,4 +16,4 @@ BEGIN
     UPDATE users
     SET average_score = IFNULL(WeightedAvg, 0)
     WHERE id = user_id_param;
-END$$
+END
