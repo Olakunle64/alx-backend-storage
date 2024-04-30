@@ -7,7 +7,7 @@ from pymongo import MongoClient
 
 if __name__ == "__main__":
     # connnect to the MongoDB server on a localhost address
-    client = MongoClient()
+    client = MongoClient('mongodb://127.0.0.1:27017')
     logs = client.logs
     nginx = logs.nginx
 
@@ -15,7 +15,7 @@ if __name__ == "__main__":
     print("{} logs".format(nginx.estimated_document_count()))
     print("Methods:")
     for method in methods:
-        print("\tmethod GET: {}".format(
+        print("\tmethod {}: {}".format(method,
             nginx.count_documents({"method": method}))
             )
     print("{} status check".format(nginx.count_documents({"method": "GET", "path": "/status"})))
