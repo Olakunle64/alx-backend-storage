@@ -12,6 +12,10 @@ if __name__ == "__main__":
     nginx = logs.nginx
 
     methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
+    top_10_ips = nginx.aggregate([{
+        "$group": {"_id": "$ip", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}}, {"$limit": 10}
+        ])
     print("{} logs".format(nginx.estimated_document_count()))
     print("Methods:")
     for method in methods:
@@ -20,10 +24,5 @@ if __name__ == "__main__":
             )
     print("{} status check".format(nginx.count_documents({"method": "GET", "path": "/status"})))
     print("IPs:")
-    top_10_ips = nginx.aggregate([{
-        "$group": {"_id": "$ip", "count": {"$sum": 1}}},
-        {"$sort": {"count": -1}}, {"$limit": 10}
-        ])
     for ip in top_10_ips:
         print("\t{}: {}".format(ip.get('_id'), ip.get('count')))
-
