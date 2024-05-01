@@ -8,6 +8,7 @@ import uuid
 class Cache():
     """A class with only one method."""
     def __init__(self) -> None:
+        """Constructor method."""
         self._redis = redis.Redis()
         self._redis.flushdb()
 
