@@ -5,14 +5,27 @@ import redis
 from functools import wraps
 
 
-def cache(method):
-    """docorator function"""
+def access_track(method):
+    """decorator function to keep track of the number
+        of times the url is accessed
+    """
     @wraps(method)
     def wrapper(*args, **kwargs):
         """Wrapper function"""
         r = redis.Redis()
         url = str(args[0])
         r.incr("count:{}".format(url))
+        return method(*args, **kwargs)
+    return wrapper
+
+
+def web_cache(method):
+    """docorator function"""
+    @wraps(method)
+    def wrapper(*args, **kwargs):
+        """Wrapper function"""
+        r = redis.Redis()
+        url = str(args[0])
         if r.get(url):
             return (r.get(url).decode('utf-8'))
         result = method(*args, **kwargs)
@@ -21,7 +34,8 @@ def cache(method):
     return wrapper
 
 
-@cache
+@access_track
+@web_cache
 def get_page(url: str) -> str:
     """get the html content of a page and also
         keep track of how many times a url is get
