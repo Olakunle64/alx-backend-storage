@@ -11,13 +11,11 @@ def cache(method):
     def wrapper(*args, **kwargs):
         """Wrapper function"""
         r = redis.Redis()
-        result = method(*args, **kwargs)
         url = str(args[0])
         r.incr("count:{}".format(url))
-        # if r.get("count:{}".format(url)):
-        #     newCount = int(r.get("count:{}".format(url))) + 1
-        # else:
-        #     newCount = 1
+        if r.get(url):
+            return str(r.get(url))
+        result = method(*args, **kwargs)
         r.setex(url, 10, result)
         return result
     return wrapper
