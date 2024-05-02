@@ -1,44 +1,58 @@
 #!/usr/bin/env python3
-"""This module has a function named <get_page>"""
+"""
+implement a get_page function
+"""
+
+
 import requests
 import redis
-from functools import wraps
+import functools
 
 
-def access_track(method):
-    """decorator function to keep track of the number
-        of times the url is accessed
-    """
-    @wraps(method)
-    def wrapper(*args, **kwargs):
-        """Wrapper function"""
-        r = redis.Redis()
-        url = str(args[0])
-        r.incr("count:{}".format(url))
-        return method(*args, **kwargs)
+def track_access(func):
+    """track access definition"""
+    @functools.wraps(func)
+    def wrapper(url):
+        """wrapper definition"""
+        # Initialize Redis connection
+        redis_conn = redis.Redis()
+
+        # Track the number of times the URL is accessed
+        count_key = f"count:{url}"
+        redis_conn.incr(count_key)
+
+        return func(url)
+
     return wrapper
 
 
-def web_cache(method):
-    """docorator function"""
-    @wraps(method)
-    def wrapper(*args, **kwargs):
-        """Wrapper function"""
-        r = redis.Redis()
-        url = str(args[0])
-        if r.get(url):
-            return (r.get(url).decode('utf-8'))
-        result = method(*args, **kwargs)
-        r.setex(url, 10, result)
-        return result
+def cache_result(func):
+    """cache result definition"""
+    @functools.wraps(func)
+    def wrapper(url):
+        """wrapper definition"""
+        # Initialize Redis connection
+        redis_conn = redis.Redis()
+
+        # Check if the result is cached
+        cached_result = redis_conn.get(url)
+        if cached_result:
+            return cached_result.decode('utf-8')
+
+        # Call the original function to fetch the HTML content
+        html_content = func(url)
+
+        # Cache the result with an expiration time of 10 seconds
+        redis_conn.setex(url, 10, html_content)
+
+        return html_content
+
     return wrapper
 
 
-@access_track
-@web_cache
+@track_access
+@cache_result
 def get_page(url: str) -> str:
-    """get the html content of a page and also
-        keep track of how many times a url is get
-    """
+    """Fetch the HTML content from the URL"""
     response = requests.get(url)
     return response.text
