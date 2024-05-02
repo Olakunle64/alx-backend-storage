@@ -10,5 +10,9 @@ def get_page(url: str) -> str:
     """
     r = redis.Redis()
     response = requests.get(url)
-    r.incr("count:{}".format(url))
+    if r.get("count:{}".format(url)):
+        newCount = int(r.get("count:{}".format(url))) + 1
+    else:
+        newCount = 1
+    r.set("count:{}".format(url), newCount, ex=10)
     return response.text
