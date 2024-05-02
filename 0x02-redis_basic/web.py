@@ -13,11 +13,12 @@ def cache(method):
         r = redis.Redis()
         result = method(*args, **kwargs)
         url = str(args[0])
-        if r.get("count:{}".format(url)):
-            newCount = int(r.get("count:{}".format(url))) + 1
-        else:
-            newCount = 1
-        r.set("count:{}".format(url), newCount, ex=10)
+        r.incr("count:{}".format(url))
+        # if r.get("count:{}".format(url)):
+        #     newCount = int(r.get("count:{}".format(url))) + 1
+        # else:
+        #     newCount = 1
+        r.setex(url, 10, result)
         return result
     return wrapper
 
