@@ -14,7 +14,7 @@ def cache(method):
         url = str(args[0])
         r.incr("count:{}".format(url))
         if r.get(url):
-            return str(r.get(url))
+            return (r.get(url).decode('utf-8'))
         result = method(*args, **kwargs)
         r.setex(url, 10, result)
         return result
